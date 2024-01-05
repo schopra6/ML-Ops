@@ -1,3 +1,57 @@
 ### Experiment tracking
 
-We'll use [MLflow](https://mlflow.org/) to track our experiments and store our models and the [MLflow Tracking UI](https://www.mlflow.org/docs/latest/tracking.html#tracking-ui) to view our experiments. We have been saving our experiments to a local directory but note that in an actual production setting, we would have a central location to store all of our experiments. I can spin up your own MLflow server in [Comet](https://www.comet.ml/), etc.
+ [MLflow](https://mlflow.org/) to track our experiments and store our models and the [MLflow Tracking UI](https://www.mlflow.org/docs/latest/tracking.html#tracking-ui) to view our experiments. We use DVC central location to store and track all of our experiments. I can spin up your own MLflow server in [Comet](https://www.comet.ml/), etc.
+
+```bash
+export MODEL_REGISTRY=$(python -c "from  mlops import config; print(config.MODEL_REGISTRY)")
+mlflow server -h 0.0.0.0 -p 8080 --backend-store-uri $MODEL_REGISTRY
+```
+### Anyscale Services
+
+Now we launch our serve our model to production.
+
+```yaml
+ray_serve_config:
+  import_path: deploy.services.serve_model:entrypoint
+  runtime_env:
+    working_dir: .
+    upload_path: s3://mlops/$GITHUB_USERNAME/services  
+    env_vars:
+      GITHUB_USERNAME: $GITHUB_USERNAME  
+```
+
+Now we're ready to launch our service:
+
+```bash
+# Rollout service
+anyscale service rollout -f deploy/services/serve_model.yaml
+
+# Query
+curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer $SECRET_TOKEN" -d '{
+  "title": "recommendation system",
+  "description": ""
+}' $SERVICE_ENDPOINT/predict/
+
+# Rollback (to previous version of the Service)
+anyscale service rollback -f $SERVICE_CONFIG --name $SERVICE_NAME
+
+# Terminate
+anyscale service terminate --name $SERVICE_NAME
+```
+
+
+
+Run the following command on your Anyscale Workspace terminal to generate the public URL to your MLflow server.
+
+  ```bash
+  APP_PORT=8080
+  echo https://$APP_PORT-port-$ANYSCALE_SESSION_DOMAIN
+  ```
+
+### Continual learning
+
+ It becomes really easy to extend on this foundation to connect to scheduled runs (cron), drift detection and online evaluation etc. with continual learning.
+
+ <div align="center">
+  <img src="https://github.com/schopra6/ML-Ops/blob/main/images/workflow.png">
+</div>
