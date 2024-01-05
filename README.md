@@ -1,6 +1,6 @@
 ### Experiment tracking
 
- [MLflow](https://mlflow.org/) to track our experiments and store our models and the [MLflow Tracking UI](https://www.mlflow.org/docs/latest/tracking.html#tracking-ui) to view our experiments. We use DVC central location to store and track all of our experiments. I can spin up your own MLflow server in [Comet](https://www.comet.ml/), etc.
+ [MLflow](https://mlflow.org/) to track our experiments and store our models and the [MLflow Tracking UI](https://www.mlflow.org/docs/latest/tracking.html#tracking-ui) to view our experiments. We use DVC central location to store and track all of our experiments. Then we spin up MLflow server in [Comet](https://www.comet.ml/), etc.
 
 ```bash
 export MODEL_REGISTRY=$(python -c "from  mlops import config; print(config.MODEL_REGISTRY)")
