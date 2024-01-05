@@ -55,3 +55,33 @@ Run the following command on your Anyscale Workspace terminal to generate the pu
  <div align="center">
   <img src="https://github.com/schopra6/ML-Ops/blob/main/images/workflow.png">
 </div>
+
+
+### Serving
+
+  ```bash
+  # Start
+  ray start --head
+  ```
+
+  ```bash
+  # Set up
+  export EXPERIMENT_NAME="llm"
+  export RUN_ID=$(python madewithml/predict.py get-best-run-id --experiment-name $EXPERIMENT_NAME --metric val_loss --mode ASC)
+  python madewithml/serve.py --run_id $RUN_ID
+  ```
+
+  Once the application is running, we can use it via cURL, Python, etc.:
+
+  ```python
+  # via Python
+  import json
+  import requests
+  json_data = json.dumps({ "data": data})
+  requests.post("http://127.0.0.1:8000/predict", data=json_data).json()
+  ```
+
+  ```bash
+  ray stop  # shutdown
+  ```
+
